@@ -3,7 +3,16 @@ import User from "../models/userModel.js";
 import { generateToken } from "../utils/generateToken.js";
 
 export const loginUserController = asyncHandler(async (req, res) => {
-  res.status(200).json({ message: "Auth controller" });
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
+
+  if (user && (await user.matchPassword(password))) {
+    generateToken(res, user._id);
+    res.status(201).json({ _id: user._id, email: user.email });
+  } else {
+    res.status(404);
+    throw new Error("Something wrong with password or email");
+  }
 });
 
 export const registerUserController = asyncHandler(async (req, res) => {
